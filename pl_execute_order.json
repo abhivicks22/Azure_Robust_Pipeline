@@ -1,0 +1,96 @@
+{
+    "name": "pl_execute_order",
+    "properties": {
+        "activities": [
+            {
+                "name": "ingest_oder",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_ingest_order",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true
+                }
+            },
+            {
+                "name": "ingest_orderitem",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "ingest_oder",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_ingest_orderitems",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true
+                }
+            },
+            {
+                "name": "process",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "ingest_orderitem",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_process_order_data",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true
+                }
+            },
+            {
+                "name": "sql_ingestion",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "process",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "pl_adls_to_sql",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true
+                }
+            }
+        ],
+        "folder": {
+            "name": "execute"
+        },
+        "annotations": []
+    }
+}
